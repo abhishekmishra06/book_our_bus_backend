@@ -1,0 +1,424 @@
+PRODUCT REQUIREMENT DOCUMENT (PRD)
+1. Product Overview
+Product Name
+
+Bus Ticket Booking Platform (Backend System)
+
+Objective
+
+Build a highly scalable, fast, and secure backend system similar to RedBus / FlixBus that allows:
+
+Normal Users to search, book, cancel, and manage bus tickets.
+
+Agents to manage buses, routes, schedules, pricing, seats, and bookings.
+
+OTP-based login with auto account creation.
+
+Unified API response format.
+
+Notification via SMS & Email.
+
+Ticket storage and media using Cloudinary.
+
+2. User Types
+2.1 Normal User
+
+Login via Phone Number + OTP
+
+Auto account creation if not exists
+
+Basic profile (phone, name, email)
+
+Search buses
+
+View seat layout
+
+Select seat
+
+Book ticket
+
+Pay (future integration)
+
+View booking history
+
+Cancel ticket
+
+Download ticket (PDF/QR)
+
+Receive SMS & Email notifications
+
+2.2 Agent
+
+Login via same phone + OTP
+
+Convert normal user to agent by completing Agent Profile
+
+Agent Profile:
+
+Company Name
+
+GST
+
+Bank Details
+
+Support Contact
+
+Address
+
+Verification Status
+
+Add buses
+
+Create routes
+
+Create schedules
+
+Define seat layout
+
+Set pricing
+
+Manage availability
+
+View all bookings
+
+Handle cancellations & refunds
+
+3. Authentication & Account Flow
+3.1 Login Flow
+
+User enters phone number
+
+OTP sent via SMS
+
+Verify OTP
+
+If phone not in DB → auto create User profile
+
+JWT token generated
+
+Role = USER by default
+
+If user completes agent form → role upgraded to AGENT
+
+3.2 Security
+
+OTP expiry (2 min)
+
+Max retry limit
+
+JWT access + refresh tokens
+
+Role-based API access
+
+4. Core Features
+4.1 Bus Search
+
+Source city
+
+Destination city
+
+Date
+
+Filters:
+
+AC / Non-AC
+
+Sleeper / Seater
+
+Departure time
+
+Price range
+
+Rating
+
+Bus type
+
+Sort:
+
+Price low-high
+
+Duration
+
+Departure time
+
+4.2 Seat Selection
+
+Real-time seat availability
+
+Lock seat for X minutes
+
+Seat types:
+
+Window
+
+Ladies
+
+Sleeper upper/lower
+
+Fare per seat
+
+4.3 Booking
+
+Passenger details
+
+Seat confirmation
+
+PNR generation
+
+QR Code
+
+Invoice PDF
+
+Store ticket on Cloudinary
+
+Payment status (future)
+
+4.4 Cancellation
+
+Cancellation policy
+
+Partial refund logic
+
+Auto seat release
+
+SMS & Email confirmation
+
+4.5 Notifications
+
+OTP
+
+Booking confirmation
+
+Cancellation
+
+Boarding reminder
+
+Delay notification
+
+5. Backend Architecture
+Tech Stack
+
+Node.js (NestJS / Express)
+
+MongoDB (Sharded Cluster)
+
+Redis (Caching & Seat Locking)
+
+Cloudinary (Ticket PDF, QR, Bus Images)
+
+SMS Gateway (Twilio / Fast2SMS)
+
+Email (SendGrid / SES)
+
+Message Queue (Kafka / RabbitMQ)
+
+API Gateway
+
+Load Balancer
+
+6. Core Microservices
+
+Auth Service
+
+User Service
+
+Agent Service
+
+Bus Service
+
+Route Service
+
+Schedule Service
+
+Seat Service
+
+Booking Service
+
+Payment Service (future)
+
+Notification Service
+
+Search Service
+
+Reporting Service
+
+7. Database Models (High Level)
+User
+id
+phone
+name
+email
+role (USER, AGENT)
+status
+createdAt
+
+Agent
+userId
+companyName
+gst
+bankDetails
+verificationStatus
+
+Bus
+agentId
+busNumber
+type
+seatLayout
+amenities
+
+Route
+source
+destination
+distance
+
+Schedule
+busId
+routeId
+departureTime
+arrivalTime
+price
+
+Booking
+pnr
+userId
+scheduleId
+seats
+status
+paymentStatus
+ticketUrl
+
+8. API Response Format (Unified)
+{
+  "success": true,
+  "message": "Booking confirmed",
+  "data": {},
+  "error": null,
+  "meta": {
+    "requestId": "uuid",
+    "timestamp": "2026-01-22T10:20:30Z"
+  }
+}
+
+
+On Error:
+
+{
+  "success": false,
+  "message": "Seat already booked",
+  "data": null,
+  "error": {
+    "code": "SEAT_LOCKED",
+    "details": "Seat A1 is locked by another user"
+  }
+}
+
+9. Performance & Scalability
+
+Horizontal scaling with Kubernetes
+
+Redis caching for:
+
+Search results
+
+Seat availability
+
+MongoDB indexing on:
+
+source
+
+destination
+
+date
+
+price
+
+Async processing for:
+
+Ticket PDF generation
+
+Email & SMS
+
+WebSocket for live seat updates
+
+10. Cloudinary Usage
+
+Store:
+
+Ticket PDF
+
+QR Code
+
+Bus images
+
+Agent documents
+
+Signed URLs for secure access
+
+11. Non-Functional Requirements
+Category	Requirement
+Latency	< 200ms API response
+Availability	99.99%
+Security	JWT, OTP, Encryption
+Scalability	1M+ concurrent users
+Logging	Centralized (ELK)
+Monitoring	Prometheus + Grafana
+12. Future Enhancements
+
+Dynamic pricing
+
+AI demand prediction
+
+Multi-language
+
+Wallet system
+
+Loyalty points
+
+Real-time bus tracking (GPS)
+
+
+
+
+
+13. Dummy Data Mode (Phase-1 Implementation)
+13.1 Purpose
+
+In the initial phase, the entire system will operate using internally generated dummy data instead of real bus operator APIs.
+This allows:
+
+Full feature development
+
+UI & Backend testing
+
+Performance benchmarking
+
+API contract stabilization
+
+Simulation of real-world traffic and load
+
+Later, this dummy layer will be replaced by External Bus Service Provider Integrations without changing frontend or core business logic.
+
+
+
+
+13.7 Future Integration Compatibility
+
+When external services are added:
+
+Layer	Change
+Frontend	No change
+API Contract	No change
+Booking Flow	No change
+Search Flow	No change
+Only Change	Provider Adapter
+
+This makes your PRD enterprise-grade and clearly shows:
+
+✔ Phase-1: Full system with Dummy Data
+✔ Phase-2: Switch to RedBus / FlixBus / Local Operator APIs
+✔ Zero rewrite, only adapter replacement
+
+
+
+
+make all these eature with fully schllable with millions of users handle but currently make with dummy data with phase one letter we switch on real services provider 
